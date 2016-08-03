@@ -16,6 +16,6 @@ genCorr <- function(n, rho, x1) {
     
     x <- Y[ , 2] + (1 / tan(theta)) * Y[ , 1]     # final new vector
 }
-genCorr(10,.0,runif(n))
+genCorr(10,.0,runif(10))
 cor(x1, x) 
 plot(x1,x + .5)
