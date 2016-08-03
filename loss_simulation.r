@@ -72,7 +72,7 @@ library(mvtnorm)
   n_missing_pd <- sum(is.na(df$pd))
   # replace missing current pds with underwriting pds from 2014/2015  
   pd_set <- pro_pds %>%
-    filter(year(ddate)>2015) %>%
+    filter(year(date)>2015, risk_category == 1) %>%
     select(pd) 
     # using underwriting pd
 	#  pd_set <- uw_pds %>%
@@ -158,6 +158,7 @@ loss_outcomes <- apply(outcome_bal, 2, sum)
 # could merge back in risk category, and group losses by category
 plot(density(loss_outcomes/sum(df$balance)))
 plot(density(pds))
+plot(sort(pds))
 sum(pds * loan_loss)
 sum(pds * loan_loss) / sum(df$balance)
 summary( (loss_outcomes) / sum(df$balance) )
@@ -174,7 +175,7 @@ summary( (loss_outcomes) / sum(df$balance) )
 
   loss_quantiles <- quantile(loss_outcomes/sum(df$balance), probs = seq(0, 1, by = 0.01))
   names(loss_quantiles) <- paste(seq(0, 100, 1), "%")
-  write.xlsx(pds, 'portfolio_loss_distribution_08.02.16.xlsx', sheetName = 'pds')
+  write.xlsx(pds, 'portfolio_loss_distribution_08.02.16.xlsx', sheetName = 'pds', append = FALSE)
   write.xlsx(loan_loss, 'portfolio_loss_distribution_08.02.16.xlsx', sheetName = 'loan_loss', append = TRUE)
   write.xlsx(loss_outcomes, 'portfolio_loss_distribution_08.02.16.xlsx', 
   	sheetName = 'loss_outcomes', append = TRUE)
@@ -206,12 +207,14 @@ summary( (loss_outcomes) / sum(df$balance) )
 
 # expected loss by risk category
   cat_table <- df %>% 
+  mutate(pd = pds) %>%
   group_by(risk_category) %>%
   summarise(
   	expected_loan_loss = sum(pd * loan_loss),
   	expected_loss_rate = sum(pd * loan_loss) / sum(balance),
   	median_pd          = median(pd),
-  	exposure           = sum(loan_loss)
+  	exposure           = sum(loan_loss),
+  	balance            = sum(balance)
   	# mean_pd            = median(ead)
   	)
   cat_table$risk_category <- c('Current', 'Special Mention', 'Substandard', 'Doubtful')
