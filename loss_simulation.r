@@ -81,7 +81,7 @@ library(mvtnorm)
 	  
   set.seed(101)
   df <- df %>%
-    mutate(
+    mutate(              # NOTE! Currently this is just sampling ONE pd for all missing loans, the *same* pd 
     	pd_replacement = ifelse(is.na(pd) & risk_category==1, sample(pd_set$pd, 1, replace = FALSE), NA),
     	pd = ifelse(is.na(pd) & risk_category==1, pd_replacement, pd),  
     	pd = replace(pd, is.na(pd) & risk_category==2, missing_sm)
@@ -111,9 +111,9 @@ library(mvtnorm)
 	k         <- nrow(df)   # number of loans
 	n         <- 1e4        # number of trials  
 	pds       <- df$pd      # use pds_hist for historical avg method
-	pds       <- pds_hist      # use pds_hist for historical avg method
+	# pds       <- pds_hist      # use pds_hist for historical avg method
 	loan_loss <- df$loan_loss
-    corr_fact <- uw_pds$coffee   # need to map this to profile_pd
+  corr_fact <- uw_pds$coffee   # need to map this to profile_pd
 
 # Create random gaussian matrix
 	set.seed(101)
@@ -174,7 +174,8 @@ summary( (loss_outcomes) / sum(df$balance) )
   setwd(wd_out)
 
   loss_quantiles <- quantile(loss_outcomes/sum(df$balance), probs = seq(0, 1, by = 0.01))
-  names(loss_quantiles) <- paste(seq(0, 100, 1), "%")
+  names(loss_quantiles) <- paste(seq(0, 100, 1), "%", sep = "")
+  names(loan_loss) <- df$LoanID
   write.xlsx(pds, 'portfolio_loss_distribution_08.02.16.xlsx', sheetName = 'pds', append = FALSE)
   write.xlsx(loan_loss, 'portfolio_loss_distribution_08.02.16.xlsx', sheetName = 'loan_loss', append = TRUE)
   write.xlsx(loss_outcomes, 'portfolio_loss_distribution_08.02.16.xlsx', 
