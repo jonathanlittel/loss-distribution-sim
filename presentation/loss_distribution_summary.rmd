@@ -1,0 +1,53 @@
+---
+title: "Loss Distribution - 6/30/16 Portfolio"
+output: word_document
+date: "August 2, 2016"
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE)
+options(digits = 1, scipen = 9)
+  wd_out <- paste("C:/Box Sync/Risk Appetite - Provisioning Project/",
+            "Working Folders for RAP Modules/Stress Testing/Loss Distribution Simulation",
+            "/output",
+            sep="")
+  setwd(wd_out)
+load('loss_sim_08.02.16.Rdata')
+```
+
+
+### Underlying and assumptions
+
+* repeated simulation of loss, based on probability of default as independent uniform random variable
+* `r active_date` portfolio
+* pds taking in to account risk category
+* `r n_missing_pd` loans with `r m$balance_missing_pd / 1e6`M in current given pds imputed
+* `r m$balance / 1e6`M balance
+* `r m$max_loan_loss/1e6`M max exposure (max loss)
+* `r median(pds) * 100`% median pd, `r mean(pds) * 100`% average
+* collateral reduces lgd by ~20%
+* risk category affects ead (`r ead$current` for current, `r ead$special_mention` and higher for non-current)
+
+### Result
+
+##### Loss Distribution
+
+```{r echo=FALSE}
+p.dist
+```
+
+Loss rate and amount by percentile (below, and indicated by vertical lines in above):
+```{r echo=FALSE}
+options(digits = 2)
+quant_table
+```
+
+Expected Loss (pd * ead * lgd * (1 - guarantee)), as amount, percentage of total balance, the median pd, and the exposure (ie the most that could be lost given assumptions):
+
+```{r echo=FALSE}
+cat_table[,1:4]
+cat_table[,c(1,5:6)]
+```
+
+Due to assumptions about guarantees, collateral, and exposure at default, `r m$max_loan_loss/1e6`M is the maximum loss amount, on the `r m$balance/1e6`M portfolio.
